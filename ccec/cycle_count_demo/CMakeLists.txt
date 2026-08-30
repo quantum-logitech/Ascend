@@ -22,6 +22,27 @@ add_executable(demo
     cycle_count.asc
 )
 
+# CANN 9.1.0-beta.3 的 asc_simd.h 在 #if __NPU_ARCH__ 分支之前就无条件包含
+# "instr_impl/npu_arch_2201/utils_impl/utils_impl.h",该文件位于 asc/impl 树下。
+# bisheng 对 asc 头文件搜索路径的自动推导依赖 ASCEND_HOME_PATH 的安装布局
+# (顶层 asc/ 或 x86_64-linux/asc/),某些布局下不会自动加入 asc/impl 目录,
+# 导致编译报 "instr_impl/npu_arch_2201/utils_impl/utils_impl.h file not found"。
+# 这里基于 CANN 自带变量显式补全搜索路径,同时覆盖两种布局,不依赖 asc-devkit。
+target_include_directories(demo PRIVATE
+    ${ASCEND_CANN_PACKAGE_LINUX_PATH}/asc/include
+    ${ASCEND_CANN_PACKAGE_LINUX_PATH}/asc/impl/c_api
+    ${ASCEND_CANN_PACKAGE_LINUX_PATH}/asc/impl/adv_api
+    ${ASCEND_CANN_PACKAGE_LINUX_PATH}/asc/impl/basic_api
+    ${ASCEND_CANN_PACKAGE_LINUX_PATH}/asc/impl/simt_api
+    ${ASCEND_CANN_PACKAGE_LINUX_PATH}/asc/impl/utils
+    $ENV{ASCEND_HOME_PATH}/asc/include
+    $ENV{ASCEND_HOME_PATH}/asc/impl/c_api
+    $ENV{ASCEND_HOME_PATH}/asc/impl/adv_api
+    $ENV{ASCEND_HOME_PATH}/asc/impl/basic_api
+    $ENV{ASCEND_HOME_PATH}/asc/impl/simt_api
+    $ENV{ASCEND_HOME_PATH}/asc/impl/utils
+)
+
 target_link_libraries(demo PRIVATE
     tiling_api
     register
