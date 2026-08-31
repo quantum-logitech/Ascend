@@ -1,6 +1,6 @@
 # cycle_count_demo
 
-最小 AI Core cycle 统计样例：直接调用 ccec 编译器内建 `get_sys_cnt()`（等价于 `asc_get_system_cycle()`），统计 kernel 各阶段（GM→UB 搬运、vector 计算、UB→GM 搬出及总耗时）的硬件 cycle 数。
+最小 AI Core cycle 统计样例：直接调用 ccec 编译器内建 `get_sys_cnt()`，统计 kernel 各阶段（GM→UB 搬运、vector 计算、UB→GM 搬出及总耗时）的硬件 cycle 数。
 
 ## 文件结构
 
@@ -25,7 +25,7 @@ cmake --build build
 - **每次 `get_sys_cnt()` 调用前，必须插入被测流水线到 PIPE_S 的同步**（`asc_sync_notify(from, PIPE_S, ...)` + `asc_sync_wait(from, PIPE_S, ...)`），否则 PIPE_S 可能越过下游同步提前执行，读到的计数器早于真实完成时刻，导致 cycle 差值偏小甚至为 0。
 - 用 `PIPE_MTE3 → PIPE_S` 的精确同步替代原 `asc_sync()`，避免全流水线排空 + barrier 握手协议的开销污染单阶段测量。
 
-## 关于 `asc_get_system_cycle` / `get_sys_cnt`
+## 关于 `get_sys_cnt`
 
 ### 功能说明
 
@@ -33,8 +33,10 @@ cmake --build build
 
 ### 函数原型
 
+`get_sys_cnt()` 是 ccec 编译器内建，对应 `clang_builtin_alias(__builtin_cce_get_sys_cnt)`，在 device 代码中可直接调用，无需包含额外头文件。
+
 ```c
-__aicore__ inline int64_t asc_get_system_cycle()
+__aicore__ int64_t get_sys_cnt();
 ```
 
 ### 返回值
@@ -47,7 +49,7 @@ PIPE_S
 
 ### 约束说明
 
-- **该接口是 PIPE_S 流水，若需要测试其他流水的指令时间，需要在调用该接口前插入对应流水的同步。**
+- **该接口走 PIPE_S 标量流水，与 PIPE_MTE2 / PIPE_V / PIPE_MTE3 等其他流水异步。若要测试其他流水线的指令耗时，必须在调用该接口前插入对应流水线到 PIPE_S 的同步。**
 - 本接口为只读查询接口，读取的是只读系统计数器，不修改任何寄存器或存储状态，可在 AIC 与 AIV 上下文中调用。
 - 返回值由系统时钟计数器实时提供，随系统时钟持续递增，不反映核函数（Kernel）启动配置或其他静态参数。
 
