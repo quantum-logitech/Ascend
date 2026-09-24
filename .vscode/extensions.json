@@ -1,0 +1,13 @@
+{
+  // clangd is the indexer / completion engine for the .asc sources.
+  // ms-vscode.cpptools is deliberately not recommended: its IntelliSense
+  // engine cannot parse the asc dialect's qualifiers or the bisheng-injected
+  // register intrinsics any better, and running both would fight over the
+  // same files.
+  "recommendations": [
+    "llvm-vs-code-extensions.vscode-clangd"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.cpptools"
+  ]
+}

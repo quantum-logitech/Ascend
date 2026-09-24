@@ -1,0 +1,31 @@
+{
+  // .asc is the ccec / bisheng "asc" language. A stock editor has no grammar or
+  // language server for it, so map it onto C++: that gives syntax highlighting
+  // and, more importantly, makes the clangd extension attach to these buffers.
+  // The actual dialect adaptation is done by compile_flags.txt, not here.
+  "files.associations": {
+    "*.asc": "cpp",
+    "*.cce": "cpp"
+  },
+
+  // clangd reads ./compile_flags.txt (generated) plus ./.clangd.
+  // --header-insertion=never keeps clangd from auto-adding #includes to .asc
+  // files, which bisheng resolves very differently from a normal TU.
+  "clangd.arguments": [
+    "--background-index",
+    "--header-insertion=never",
+    "--completion-style=detailed",
+    "--pch-storage=memory"
+  ],
+
+  // Keep clangd quiet about the fact that the .asc dialect is not real C++.
+  "clangd.onConfigChanged": "restart",
+
+  // Files under these paths are CANN / bisheng internals. Their diagnostics are
+  // noise: they are written for the real bisheng frontend, not for clang.
+  "files.watcherExclude": {
+    "**/.cache/clangd/**": true
+  },
+
+  "C_Cpp.intelliSenseEngine": "disabled"
+}

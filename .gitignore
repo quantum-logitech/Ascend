@@ -1,2 +1,10 @@
 # 构建产物
 build/
+
+# clangd 索引缓存
+.cache/
+
+# 由 .vscode/ccec-ide/gen_ide_env.sh 生成的编辑器侧产物
+# （依赖本机 CANN 安装路径，不入库）
+compile_flags.txt
+.vscode/ccec-ide/bisheng/
